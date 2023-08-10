@@ -30,7 +30,7 @@ const int8_t MaxWheelInput = 127;    // Igrgnore values above this threshold as 
 const unsigned long UpdateRate = 3;          // Controller polling rate, in milliseconds (ms)
 const unsigned long DetectTime = 1000;       // Time before a connected controller is considered stable (ms)
 const unsigned long ConnectRate = 500;       // Rate to attempt reconnections, in ms
-const unsigned long EffectsTimeout = 400;    // Timeout for the effects tracker, in ms
+const unsigned long EffectsTimeout = 1000;    // Timeout for the effects tracker, in ms
 const uint8_t       EffectThreshold = 1;     // Threshold to trigger input from the fx dial. One revolution = 31.
 #define IGNORE_DETECT_PIN                 // Ignore the state of the 'controller detect' pin, for breakouts without one.
 
@@ -83,12 +83,6 @@ void setup() {
 	Serial.println("----------------------------");
 	#endif
 
-	pinMode(SafetyPin, INPUT_PULLUP);
-	if (digitalRead(SafetyPin) == LOW) {
-		DEBUG_PRINTLN("Safety loop activated! Exiting program");
-		for (;;);  // Safety loop!
-	}
-
 	LED.begin();  // Set LED pin mode
 	controller.begin();  // Initialize controller bus and detect pins
 
@@ -110,11 +104,11 @@ void djController() {
 
   // FX
   	fx.update();  // update tracker with new data
-    if (fx.getChange() > 0){
-      XInput.setJoystick(effect, 127, 0);
+    if (fx.getTotal() > 0){
+      XInput.setJoystick(effect, constrain(fx.getTotal(), 0, 30), 0);
     }
-    else if(fx.getChange() < 0){
-      XInput.setJoystick(effect, 0, 127);
+    else if(fx.getTotal() < 0){
+      XInput.setJoystick(effect, 0, constrain((fx.getTotal() * - 1), 0, 30));
     }
     else {
       XInput.setJoystick(effect, 0, 0);
