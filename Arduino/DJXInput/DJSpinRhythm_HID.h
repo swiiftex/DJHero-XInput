@@ -1,8 +1,8 @@
 /*
-*  Project     DJ Hero - Lucio
+*  Project     DJ Hero - Spin Rhythm XD Controller
 *  @author     David Madison
-*  @link       github.com/dmadison/DJHero-Lucio
-*  @license    GPLv3 - Copyright (c) 2018 David Madison
+*  @link       github.com/dmadison/DJHero-SpinRhythm
+*  @license    GPLv3 - Copyright (c) 2020 David Madison
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -16,15 +16,14 @@
 *
 *  You should have received a copy of the GNU General Public License
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*  Forked from the DJ Hero Lucio project: github.com/dmadison/DJHero-Lucio
 */
 
-#ifndef DJLucio_HID_h
-#define DJLucio_HID_h
-
-#include <Mouse.h>
-#include <Keyboard.h>
-#include "DJLucio_Util.h"
-
+#ifndef DJSpinRhythm_HID_h
+#define DJSpinRhythm_HID_h
+#include <XInput.h>
+#include "DJSpinRhythm_Util.h"
 #ifdef DEBUG_HID
 #define D_HID(x)   DEBUG_PRINT(x)
 #define D_HIDLN(x) DEBUG_PRINTLN(x)
@@ -84,7 +83,15 @@ public:
 		}
 	}
 
-	void press(boolean state = true) {
+	void press() {
+		set(true);
+	}
+
+	void release() {
+		set(false);
+	}
+
+	void set(boolean state) {
 		if (state == pressed) {
 			return; // Nothing to see here, folks
 		}
@@ -93,8 +100,8 @@ public:
 		pressed = state;
 	}
 
-	void release() {
-		press(false);
+	boolean isPressed() const {
+		return pressed;
 	}
 
 	// Release all buttons, using the linked list
@@ -121,59 +128,15 @@ private:
 HID_Button * HID_Button::head = nullptr;
 HID_Button * HID_Button::tail = nullptr;
 
-// HID_Button: Sending mouse inputs
-class MouseButton : public HID_Button {
+// HID_Button: Sending controller
+class ControllerButton : public HID_Button {
 public:
 	using HID_Button::HID_Button;
 private:
 	void sendState(boolean state) {
-		state ? Mouse.press(key) : Mouse.release(key);
-
-		#ifdef DEBUG_HID
-		DEBUG_PRINT("Mouse ");
-		switch (key) {
-			case(MOUSE_LEFT):
-				DEBUG_PRINT("left");
-				break;
-			case(MOUSE_RIGHT):
-				DEBUG_PRINT("right");
-				break;
-			case(MOUSE_MIDDLE):
-				DEBUG_PRINT("middle");
-				break;
-		}
-		DEBUG_PRINT(' ');
-		DEBUG_PRINTLN(state ? "pressed" : "released");
-		#endif
+		state ? XInput.press(key) : XInput.release(key);
 	}
 };
 
-// HID_Button: Sending keyboard inputs
-class KeyboardButton : public HID_Button {
-public:
-	using HID_Button::HID_Button;
-private:
-	void sendState(boolean state) {
-		state ? Keyboard.press(key) : Keyboard.release(key);
-
-		#ifdef DEBUG_HID
-		DEBUG_PRINT("Keyboard ");
-		switch (key) {
-			case(KEY_LEFT_SHIFT):
-			case(KEY_RIGHT_SHIFT):
-				DEBUG_PRINT("shift");
-				break;
-			case(' '):
-				DEBUG_PRINT("(space)");
-				break;
-			default:
-				DEBUG_PRINT((char)key);
-				break;
-		}
-		DEBUG_PRINT(' ');
-		DEBUG_PRINTLN(state ? "pressed" : "released");
-		#endif
-	}
-};
 
 #endif

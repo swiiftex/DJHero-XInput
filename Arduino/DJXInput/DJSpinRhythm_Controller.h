@@ -1,8 +1,8 @@
 /*
-*  Project     DJ Hero - Lucio
+*  Project     DJ Hero - Spin Rhythm XD Controller
 *  @author     David Madison
-*  @link       github.com/dmadison/DJHero-Lucio
-*  @license    GPLv3 - Copyright (c) 2018 David Madison
+*  @link       github.com/dmadison/DJHero-SpinRhythm
+*  @license    GPLv3 - Copyright (c) 2020 David Madison
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -16,13 +16,15 @@
 *
 *  You should have received a copy of the GNU General Public License
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*  Forked from the DJ Hero Lucio project: github.com/dmadison/DJHero-Lucio
 */
 
-#ifndef DJLucio_Controller_h
-#define DJLucio_Controller_h
+#ifndef DJSpinRhythm_Controller_h
+#define DJSpinRhythm_Controller_h
 
 #include <NintendoExtensionCtrl.h>
-#include "DJLucio_Util.h"
+#include "DJSpinRhythm_Util.h"
 
 #ifdef DEBUG_CONTROLDETECT
 #define D_CD(x)   DEBUG_PRINT(x)
@@ -50,10 +52,12 @@ public:
 		return abs(total) >= threshold;
 	}
 
+  int8_t fxChange = 0;
+
 	void update() {
 		const uint8_t MaxChange = 5;  // Arbitrary, for spurious value check
 
-		int8_t fxChange = fx.getChange();  // Change since last update
+		fxChange = fx.getChange();  // Change since last update
 
 		// Check inactivity timer
 		if (fxChange != 0) {
@@ -72,6 +76,10 @@ public:
 	int16_t getTotal() {
 		return total;
 	}
+
+  int16_t getChange() {
+    return fxChange;
+  }
 
 	void reset() {
 		total = 0;
@@ -128,7 +136,7 @@ private:
 // ConnectionHelper: Keeps track of the controller's 'connected' state, and auto-updates control data
 class ConnectionHelper {
 public:
-	ConnectionHelper(ExtensionController &con, uint8_t cdPin, unsigned long pollTime, unsigned long cdWaitTime, unsigned long reconnectTime) :
+	ConnectionHelper(DJTurntableController &con, uint8_t cdPin, unsigned long pollTime, unsigned long cdWaitTime, unsigned long reconnectTime) :
 		controller(con), detect(cdPin, cdWaitTime), pollRate(pollTime), reconnectRate(reconnectTime) {}
 
 	void begin() {
@@ -204,7 +212,7 @@ private:
 
 	static const float LED_BlinkSpeed;
 
-	ExtensionController & controller;
+	DJTurntableController & controller;
 	ControllerDetect detect;
 
 	RateLimiter pollRate;
