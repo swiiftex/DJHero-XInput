@@ -23,14 +23,15 @@
 #include <NintendoExtensionCtrl.h>
 
 // User Settings
-const int8_t WheelSensitivity = 2;  // Mouse sensitivity multipler - 12 max
+const int8_t WheelSensitivity = 20;
 const int8_t MaxWheelInput = 127;    // Igrgnore values above this threshold as extranous
+const int8_t IgnoreFretsOnWheelSpeed = 99999;  // Don't update the frets if the wheel is going above this speed
 
 // Tuning Options
-const unsigned long UpdateRate = 3;          // Controller polling rate, in milliseconds (ms)
+const unsigned long UpdateRate = 2;          // Controller polling rate, in milliseconds (ms)
 const unsigned long DetectTime = 1000;       // Time before a connected controller is considered stable (ms)
 const unsigned long ConnectRate = 500;       // Rate to attempt reconnections, in ms
-const unsigned long EffectsTimeout = 1000;    // Timeout for the effects tracker, in ms
+const unsigned long EffectsTimeout = 1200;    // Timeout for the effects tracker, in ms
 const uint8_t       EffectThreshold = 1;     // Threshold to trigger input from the fx dial. One revolution = 31.
 #define IGNORE_DETECT_PIN                 // Ignore the state of the 'controller detect' pin, for breakouts without one.
 
@@ -116,12 +117,12 @@ void djController() {
 
 
   // TURNTABLE
-    if (dj.turntable() > 1){
-      XInput.setTrigger(deckleft, dj.turntable());
+    if (dj.turntable() > 0.1){
+      XInput.setTrigger(deckleft, (dj.turntable() * WheelSensitivity));
       XInput.setTrigger(deckright, 0);
     }
-    else if(dj.turntable() < -1){
-      XInput.setTrigger(deckright, (dj.turntable() * -1));
+    else if(dj.turntable() < -0.1){
+      XInput.setTrigger(deckright, ((dj.turntable() * -1) * WheelSensitivity));
       XInput.setTrigger(deckleft, 0);
     }
     else {
@@ -130,9 +131,10 @@ void djController() {
     }
 
   // Frets
-	red.set(dj.buttonRed());
-	blue.set(dj.buttonBlue());
-	green.set(dj.buttonGreen());
+  red.set(dj.buttonRed());
+  blue.set(dj.buttonBlue());
+  green.set(dj.buttonGreen());
+
   euphoria.set(dj.buttonEuphoria());
   
 	// Base Unit Controls
